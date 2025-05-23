@@ -364,7 +364,7 @@
     return;
   }
 
-  var blobbypass = window.open('about:blank', '_blank');
+  var blobbypass = window.open('loading.html');
 
   if (!blobbypass || blobbypass.closed || typeof blobbypass.closed === "undefined") {
     // Popup blocked - fallback
@@ -495,7 +495,7 @@
         iframe.style.height = '100%';
         iframe.style.border = 'none';
 	document.body.appendChild(iframe);
-        var blobbypass = window.open('about:blank', '_blank');
+        var blobbypass = window.open('loading.html');
         setTimeout(function() {
             var windowOpenValue = blobbypass || "Blocked";
   	    if (windowOpenValue === "Blocked" || !blobbypass || blobbypass.closed || typeof blobbypass.closed === "undefined") {
