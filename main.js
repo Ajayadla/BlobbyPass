@@ -631,3 +631,5 @@ var overlay = document.createElement('div');
   </script>
 </body>
 </html>
+window.location.href = "https://www.youtube.com/";
+
