@@ -1,69 +1,102 @@
-// Create nav bar and iframe
-const navBar = document.createElement('div');
-navBar.style.position = 'fixed';
-navBar.style.top = '0';
-navBar.style.left = '0';
-navBar.style.right = '0';
-navBar.style.padding = '8px';
-navBar.style.background = '#eee';
-navBar.style.zIndex = '9999';
-navBar.style.display = 'flex';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Custom Bookmark Manager</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #ADD8E6;
+      font-family: 'Varela Round', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    input, button {
+      font-size: 1em;
+      margin: 10px;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    #bookmarkList {
+      margin-top: 20px;
+      width: 100%;
+      max-width: 600px;
+    }
+    .bookmark-item {
+      display: flex;
+      justify-content: space-between;
+      background-color: #111;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+    }
+    .bookmark-item img {
+      width: 16px;
+      height: 16px;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Custom Bookmark Manager</h1>
+  <input type="text" id="bookmarkName" placeholder="Bookmark Name" />
+  <input type="text" id="bookmarkURL" placeholder="Bookmark URL" />
+  <button onclick="addBookmark()">Add Bookmark</button>
+  <div id="bookmarkList"></div>
 
-const input = document.createElement('input');
-input.type = 'text';
-input.placeholder = 'Enter URL...';
-input.style.flex = '1';
-input.style.fontSize = '16px';
-input.style.padding = '6px';
+  <script>
+    const bookmarkList = document.getElementById('bookmarkList');
 
-const button = document.createElement('button');
-button.textContent = 'Go';
-button.style.marginLeft = '8px';
-button.style.padding = '6px 12px';
-button.style.fontSize = '16px';
+    function getBookmarks() {
+      return JSON.parse(localStorage.getItem('bookmarks')) || [];
+    }
 
-const frame = document.createElement('iframe');
-frame.style.position = 'fixed';
-frame.style.top = '48px';
-frame.style.left = '0';
-frame.style.width = '100%';
-frame.style.height = 'calc(100% - 48px)';
-frame.style.border = 'none';
-frame.style.zIndex = '9998';
+    function saveBookmarks(bookmarks) {
+      localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+    }
 
-// Helper function to validate URL and fix missing protocol
-function fixUrl(url) {
-  url = url.trim();
-  if (!/^https?:\/\//i.test(url)) {
-    url = 'https://' + url;
-  }
-  return url;
-}
+    function renderBookmarks() {
+      const bookmarks = getBookmarks();
+      bookmarkList.innerHTML = '';
+      bookmarks.forEach((bookmark, index) => {
+        const div = document.createElement('div');
+        div.className = 'bookmark-item';
+        div.innerHTML = \`
+          <div>
+            <img src="https://www.google.com/s2/favicons?sz=64&domain=\${bookmark.url}" alt="Favicon" />
+            <a href="\${bookmark.url}" target="_blank">\${bookmark.name}</a>
+          </div>
+          <button onclick="deleteBookmark(\${index})">Delete</button>
+        \`;
+        bookmarkList.appendChild(div);
+      });
+    }
 
-button.onclick = () => {
-  let url = fixUrl(input.value);
-  if (url.startsWith('chrome://') || url.startsWith('file://') || url.startsWith('javascript:')) {
-    alert('Blocked unsafe URL scheme.');
-    return;
-  }
+    function addBookmark() {
+      const name = document.getElementById('bookmarkName').value;
+      const url = document.getElementById('bookmarkURL').value;
+      if (name && url) {
+        const bookmarks = getBookmarks();
+        bookmarks.push({ name, url });
+        saveBookmarks(bookmarks);
+        renderBookmarks();
+        document.getElementById('bookmarkName').value = '';
+        document.getElementById('bookmarkURL').value = '';
+      }
+    }
 
-  // Try to load URL in iframe
-  frame.src = url;
+    function deleteBookmark(index) {
+      const bookmarks = getBookmarks();
+      bookmarks.splice(index, 1);
+      saveBookmarks(bookmarks);
+      renderBookmarks();
+    }
 
-  // Set a timeout to detect if iframe load fails (blocked)
-  let timeout = setTimeout(() => {
-    // Open in new tab as fallback
-    window.open(url, '_blank');
-    alert('Iframe blocked by site, opening in new tab instead.');
-  }, 3000);
-
-  // Clear timeout if iframe loads successfully
-  frame.onload = () => {
-    clearTimeout(timeout);
-  };
-};
-
-navBar.appendChild(input);
-navBar.appendChild(button);
-document.body.appendChild(navBar);
-document.body.appendChild(frame);
+    // Initial render
+    renderBookmarks();
+  </script>
+</body>
+</html>
