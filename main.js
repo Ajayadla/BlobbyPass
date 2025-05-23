@@ -31,14 +31,36 @@ frame.style.height = 'calc(100% - 48px)';
 frame.style.border = 'none';
 frame.style.zIndex = '9998';
 
+// Helper function to validate URL and fix missing protocol
+function fixUrl(url) {
+  url = url.trim();
+  if (!/^https?:\/\//i.test(url)) {
+    url = 'https://' + url;
+  }
+  return url;
+}
+
 button.onclick = () => {
-  let url = input.value.trim();
-  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  let url = fixUrl(input.value);
   if (url.startsWith('chrome://') || url.startsWith('file://') || url.startsWith('javascript:')) {
     alert('Blocked unsafe URL scheme.');
     return;
   }
+
+  // Try to load URL in iframe
   frame.src = url;
+
+  // Set a timeout to detect if iframe load fails (blocked)
+  let timeout = setTimeout(() => {
+    // Open in new tab as fallback
+    window.open(url, '_blank');
+    alert('Iframe blocked by site, opening in new tab instead.');
+  }, 3000);
+
+  // Clear timeout if iframe loads successfully
+  frame.onload = () => {
+    clearTimeout(timeout);
+  };
 };
 
 navBar.appendChild(input);
